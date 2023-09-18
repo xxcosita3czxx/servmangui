@@ -10,6 +10,11 @@ class App(ctk.CTk):
         self.resizable(False,False)
 
 		# Frames
+        main_left = ctk.CTkFrame(self)
+        
+        
+        # Grid Applying
+        main_left.grid(row=0,column=0)
 if __name__ == "__main__":
     app = App()
     app.mainloop()
