@@ -4,6 +4,7 @@
 # TODO>> terminal ssh
 import customtkinter as ctk
 import os
+import subprocess
 class App(ctk.CTk):
     def __init__(self):
     	# INIT of Self
@@ -55,6 +56,14 @@ Also it can find any router ip if you forgot.
                 
         # Logic
         
+        ## Functions
+        def wlan_ip():
+            result=subprocess.run('ipconfig',stdout=subprocess.PIPE,text=True).stdout.lower()
+            scan=0
+            for i in result.split('\n'):
+                if 'wireless' in i: scan=1
+                if scan:
+                    if 'ipv4' in i: return i.split(':')[1].strip()
 if __name__ == "__main__":
     app = App()
     app.mainloop()
