@@ -1,0 +1,4 @@
+customtkinter
+pyspeedtest
+speedtest-cli
+pywifi
