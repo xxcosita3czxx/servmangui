@@ -4,17 +4,6 @@ import subprocess
 import threading
 import netifaces
 
-def get_lan_ip():
-    try:
-        # Create a socket to the Google DNS server (8.8.8.8)
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        local_ip = s.getsockname()[0]
-        s.close()
-        return local_ip
-    except socket.error:
-        return None
-
 def check_ip_existence(ip, result_list):
     try:
         # Use the 'ping' command on Linux or Windows to check if the IP exists
@@ -75,13 +64,7 @@ def get_router_gateway_ip():
         return None
 if __name__ == "__main__":
     # Example usage:
-    local_ip = get_lan_ip()
-    subnet = ".".join(local_ip.split('.')[:-1])
 
     lan_ips = scan_lan_ips(subnet,num_threads=255,start_ip=1,end_ip=255)
 
     router_gateway_ip = get_router_gateway_ip()
-
-    print("Local LAN IP Address:", local_ip)
-    print("Existing LAN IPs:", lan_ips)
-    print("Router Gateway IP:", router_gateway_ip)

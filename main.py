@@ -1,6 +1,4 @@
-# TODO>> main logic of left frame
-# TODO>> Welcome screen
-# TODO>> IP/router Finder
+# TODO>> Network tab (Utils/test_ipfind_FINAL.py)
 # TODO>> terminal ssh
 import customtkinter as ctk
 import os
@@ -8,6 +6,10 @@ import socket
 import speedtest
 import threading
 import pywifi
+import json
+
+
+
 try: # The error handler
     class App(ctk.CTk):
         def __init__(self):
@@ -22,8 +24,14 @@ try: # The error handler
             main_tab_Home_about_text_var = """This tool uses ssh and internet connection to find every single
     open port or responding IP that you want to find. 
     Also it can find any router ip if you forgot.
+
             
             """
+            ip = self.get_ip()
+            subnet = ".".join(ip.split('.')[:-1])
+            
+            config_raw_r=json.load(open("config.json","r"))
+            
             # Frames
             self.main_left = ctk.CTkFrame(self,width=200,height=400)
             self.main_tab = ctk.CTkTabview(self,width=400,height=400,fg_color="black")
@@ -47,6 +55,9 @@ try: # The error handler
             ## Home Tab
             self.main_tab_Home_welcome_label = ctk.CTkLabel(self.main_tab.tab("Home"),text=f"Welcome, {os.getlogin()}",font=self.Big_text,width=387)
             self.main_tab_Home_about_text = ctk.CTkLabel(self.main_tab.tab("Home"),text=main_tab_Home_about_text_var,width=387)
+
+            ## Network Tab
+            self.main_tab_Network_refresh_button = ctk.CTkButton(self.main_tab.tab("Network"),text="refresh",width=387)
             # Grid Applying
             self.main_left.grid(row=0,column=0,sticky="n"+"w"+"s"+"e")
             self.main_left_curr_wifi_conn.grid(row=0,column=0,sticky="w"+"e"+"n")
@@ -55,7 +66,8 @@ try: # The error handler
             self.main_tab.grid(row=0,column=1,sticky="n"+"w"+"s"+"e")
             self.main_tab_Home_welcome_label.grid(row=0,column=0,sticky="n")
             self.main_tab_Home_about_text.grid(row=1,column=0,sticky="n")
-                    
+            self.main_tab_Network_refresh_button.grid(row=0,column=0)
+
         # Logic
         
         ## Functions
@@ -65,16 +77,15 @@ try: # The error handler
             ssid = iface.scan_results()[0].ssid
             return ssid
         def get_ip(self):
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             try:
-                # doesn't even have to be reachable
-                s.connect(('10.255.255.255', 1))
-                IP = s.getsockname()[0]
-            except:
-                IP = 'Disconnected'
-            finally:
+                # Create a socket to the Google DNS server (8.8.8.8)
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                s.connect(("8.8.8.8", 80))
+                local_ip = s.getsockname()[0]
                 s.close()
-            return IP
+                return local_ip
+            except socket.error:
+                return None
         def truncate_float(self,float_number, decimal_places):
             multiplier = 10 ** decimal_places
             return int(float_number * multiplier) / multiplier
@@ -107,3 +118,5 @@ try: # The error handler
 
 except PermissionError:
     print("Rerun with sudo/Administrator privs")
+except KeyboardInterrupt:
+    print("See you next time :3")
