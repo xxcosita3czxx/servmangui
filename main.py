@@ -1,5 +1,6 @@
 # TODO>> Network tab (Utils/test_ipfind_FINAL.py)
 # TODO>> terminal ssh
+# TODO>> Fix UP/DOWN meter
 import customtkinter as ctk
 import os
 import socket
@@ -27,11 +28,13 @@ try: # The error handler
 
             
             """
-            ip = self.get_ip()
-            subnet = ".".join(ip.split('.')[:-1])
+            self.ip = self.get_ip()
+            self.subnet = ".".join(self.ip.split('.')[:-1])
             
             config_raw_r=json.load(open("config.json","r"))
-            
+            num_threads = config_raw_r["num_threads"]
+            ip_start = config_raw_r["start_ip"]
+            ip_end = config_raw_r["end_ip"]
             # Frames
             self.main_left = ctk.CTkFrame(self,width=200,height=400)
             self.main_tab = ctk.CTkTabview(self,width=400,height=400,fg_color="black")
@@ -95,25 +98,25 @@ try: # The error handler
                 download_speed = st.download()/1000000  # Convert to Mbps
                 upload_speed = st.upload()/1000000  # Convert to Mbps
                 return  "DOWN:"+str(self.truncate_float(download_speed,2)) +" // "+"UP:"+str(self.truncate_float(upload_speed,2))
-            except:
+            except Exception as e:
+                print(f"EXCEPTION OCCURED: {e} , Contact me ASAP!")
                 return "Disconnected"
 
         ## Updating Functions
         def main_left_update_ip(self):
-            self.main_left_curr_wifi_LAN_ip.configure(text=f"IP: {self.get_ip()}")
+            self.main_left_curr_wifi_LAN_ip.configure(text=f"IP: {self.ip}")
             app.after(1000,self.main_left_update_ip)
         def main_left_update_ssid(self):
             self.main_left_curr_wifi_conn.configure(text=f"{self.get_ssid()}")
             app.after(1000,self.main_left_update_ssid)
         def main_left_update_speed(self):
             self.main_left_curr_wifi_speed.configure(text=self.get_Up_Down())
+            app.after(30000,self.main_left_update_speed)
     if __name__ == "__main__":
         app = App()
         app.main_left_update_ip()
         app.main_left_update_ssid()
-        speedthread = threading.Thread(target=app.main_left_update_speed)
-        speedthread.setDaemon(True)
-        speedthread.start()
+        app.main_left_update_speed()
         app.mainloop()
 
 except PermissionError:
