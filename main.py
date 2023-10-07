@@ -1,6 +1,12 @@
+##############################################################################################
+#                                # Server Manager GUI #                                      #
+##############################################################################################
+# TODO's for myself ->>
 # TODO>> Network tab (Utils/test_ipfind_FINAL.py)
 # TODO>> terminal ssh
 # TODO>> Fix UP/DOWN meter
+##############################################################################################
+
 import customtkinter as ctk
 import os
 import socket
@@ -8,8 +14,6 @@ import speedtest
 import threading
 import pywifi
 import json
-
-
 
 try: # The error handler
     class App(ctk.CTk):
