@@ -21,6 +21,7 @@ try: # The error handler
             self.title("servmanGUI")
             self.geometry(f"{600}x{400}")
             self.resizable(False,False)
+            
             # Variables
             main_tab_Home_about_text_var = """This tool uses ssh and internet connection to find every single
     open port or responding IP that you want to find. 
@@ -28,6 +29,7 @@ try: # The error handler
 
             
             """
+        
             self.ip = self.get_ip()
             self.subnet = ".".join(self.ip.split('.')[:-1])
             
@@ -35,6 +37,7 @@ try: # The error handler
             num_threads = config_raw_r["num_threads"]
             ip_start = config_raw_r["start_ip"]
             ip_end = config_raw_r["end_ip"]
+
             # Frames
             self.main_left = ctk.CTkFrame(self,width=200,height=400)
             self.main_tab = ctk.CTkTabview(self,width=400,height=400,fg_color="black")
@@ -79,6 +82,7 @@ try: # The error handler
             iface = wifi.interfaces()[0]  # Assuming you have one WiFi interface
             ssid = iface.scan_results()[0].ssid
             return ssid
+        
         def get_ip(self):
             try:
                 # Create a socket to the Google DNS server (8.8.8.8)
@@ -87,17 +91,21 @@ try: # The error handler
                 local_ip = s.getsockname()[0]
                 s.close()
                 return local_ip
+        
             except socket.error:
                 return None
+        
         def truncate_float(self,float_number, decimal_places):
             multiplier = 10 ** decimal_places
             return int(float_number * multiplier) / multiplier
+        
         def get_Up_Down(self):
             try:
                 st = speedtest.Speedtest()
                 download_speed = st.download()/1000000  # Convert to Mbps
                 upload_speed = st.upload()/1000000  # Convert to Mbps
                 return  "DOWN:"+str(self.truncate_float(download_speed,2)) +" // "+"UP:"+str(self.truncate_float(upload_speed,2))
+            
             except Exception as e:
                 print(f"EXCEPTION OCCURED: {e} , Contact me ASAP!")
                 return "Disconnected"
@@ -106,12 +114,15 @@ try: # The error handler
         def main_left_update_ip(self):
             self.main_left_curr_wifi_LAN_ip.configure(text=f"IP: {self.ip}")
             app.after(1000,self.main_left_update_ip)
+            
         def main_left_update_ssid(self):
             self.main_left_curr_wifi_conn.configure(text=f"{self.get_ssid()}")
             app.after(1000,self.main_left_update_ssid)
+            
         def main_left_update_speed(self):
             self.main_left_curr_wifi_speed.configure(text=self.get_Up_Down())
             app.after(30000,self.main_left_update_speed)
+            
     if __name__ == "__main__":
         app = App()
         app.main_left_update_ip()
@@ -121,5 +132,6 @@ try: # The error handler
 
 except PermissionError:
     print("Rerun with sudo/Administrator privs")
+    
 except KeyboardInterrupt:
     print("See you next time :3")
