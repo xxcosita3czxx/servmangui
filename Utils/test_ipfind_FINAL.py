@@ -1,4 +1,3 @@
-import socket
 import platform
 import subprocess
 import threading
