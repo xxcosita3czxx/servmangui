@@ -43,7 +43,7 @@ try: # The error handler
             num_threads = config_raw_r["num_threads"]
             ip_start = config_raw_r["start_ip"]
             ip_end = config_raw_r["end_ip"]
-
+            self.ip_buttons_ids = []
             # Frames
             self.main_left = ctk.CTkFrame(self,width=200,height=400)
             self.main_tab = ctk.CTkTabview(self,width=400,height=400,fg_color="black")
@@ -164,6 +164,13 @@ try: # The error handler
                 ip = subnet + "." + str(i)
                 self.check_ip_existence(ip, result_list)
 
+        def update_network_list(self,window,button_labels):
+            self.ip_buttons_ids.clear()
+            for i, label in enumerate(button_labels):
+                button = ctk.CTkButton(window, text=label)
+                button.grid(row=i, column=0)
+                self.ip_buttons_ids.append(button)
+                
         def get_router_gateway_ip():
             try:
                 # Get the default gateway's IP address (cross-platform)
@@ -174,6 +181,7 @@ try: # The error handler
             except Exception as e:
                 print(f"Error getting router gateway IP: {e}")
                 return None
+            
         ## Updating Functions
         def main_left_update_ip(self):
             self.main_left_curr_wifi_LAN_ip.configure(text=f"IP: {self.ip}")
