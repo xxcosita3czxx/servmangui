@@ -2,7 +2,7 @@
 #                                # Server Manager GUI #                                      #
 ##############################################################################################
 # TODO's for myself ->>
-# TODO>> Network tab (Utils/test_ipfind_FINAL.py)
+# TODO>> Network tab (Utils/test_autobuttons.py)
 # TODO>> terminal ssh
 # TODO>> Fix UP/DOWN meter
 ##############################################################################################
@@ -11,10 +11,12 @@ import customtkinter as ctk
 import os
 import socket
 import speedtest
-import threading
 import pywifi
 import json
-
+import platform
+import subprocess
+import threading
+import netifaces
 try: # The error handler
     class App(ctk.CTk):
         def __init__(self):
@@ -114,6 +116,64 @@ try: # The error handler
                 print(f"EXCEPTION OCCURED: {e} , Contact me ASAP!")
                 return "Disconnected"
 
+        def check_ip_existence(self,ip, result_list):
+            try:
+                # Use the 'ping' command on Linux or Windows to check if the IP exists
+                if platform.system() == "Linux":
+                    print(f"checking {ip}")
+                    output = subprocess.check_output(["ping", "-c", "1", ip], stderr=subprocess.STDOUT, text=True)
+                    if "1 packets transmitted," in output and "0 received" not in output:
+                        result_list.append(ip)
+                        print(f"Checked IP: {ip}")
+                elif platform.system() == "Windows":
+                    output = subprocess.check_output(["ping", "-n", "1", ip], stderr=subprocess.STDOUT, text=True)
+                    if "Received = 1" in output:
+                        result_list.append(ip)
+                        print(f"Checked IP: {ip}")
+            except subprocess.CalledProcessError as e:
+                pass
+            except Exception as e:
+                print(f"Error checking IP {ip}: {e}")
+
+        def scan_lan_ips(self,subnet, num_threads=4,start_ip = 1,end_ip = 255):
+            # Create a list to store results
+            if end_ip - start_ip + 1 < num_threads:
+                raise ValueError("Must be same or less threads than checked ip adresses")
+            result_list = []
+
+            # Calculate the number of IPs each thread should check
+            ips_per_thread = (end_ip - start_ip + 1) // num_threads
+
+            # Create and start threads
+            threads = []
+            for i in range(num_threads):
+                start = start_ip + i * ips_per_thread
+                end = start + ips_per_thread - 1
+                thread = threading.Thread(target=self.check_ip_range, args=(subnet, start, end, result_list))
+                thread.start()
+                threads.append(thread)
+
+            # Wait for all threads to finish
+            for thread in threads:
+                thread.join()
+
+            return result_list
+
+        def check_ip_range(self,subnet, start, end, result_list):
+            for i in range(start, end + 1):
+                ip = subnet + "." + str(i)
+                self.check_ip_existence(ip, result_list)
+
+        def get_router_gateway_ip():
+            try:
+                # Get the default gateway's IP address (cross-platform)
+                gateways = netifaces.gateways()
+                if 'default' in gateways and netifaces.AF_INET in gateways['default']:
+                    return gateways['default'][netifaces.AF_INET][0]
+                return None
+            except Exception as e:
+                print(f"Error getting router gateway IP: {e}")
+                return None
         ## Updating Functions
         def main_left_update_ip(self):
             self.main_left_curr_wifi_LAN_ip.configure(text=f"IP: {self.ip}")
