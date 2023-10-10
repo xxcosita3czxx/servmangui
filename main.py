@@ -46,6 +46,8 @@ try: # The error handler
             self.ip_start = config_raw_r["start_ip"]
             self.ip_end = config_raw_r["end_ip"]
             self.ip_buttons_ids = []
+            self.toplevel_window = None
+            
             # Frames
             self.main_left = ctk.CTkFrame(self,width=200,height=400)
             self.main_tab = ctk.CTkTabview(self,width=400,height=400,fg_color="black")
@@ -175,7 +177,7 @@ try: # The error handler
                 button.destroy()
             self.ip_buttons_ids.clear()
             for i, label in enumerate(button_labels):
-                button = ctk.CTkButton(window, text=label,anchor="w",width=387,fg_color="gray")
+                button = ctk.CTkButton(window, text=label,anchor="w",width=387,fg_color="gray",command=self.open_toplevel)
                 button.grid(row=i+1, column=0,sticky="w")
                 self.ip_buttons_ids.append(button)
                 
@@ -206,7 +208,21 @@ try: # The error handler
             
         def main_left_update_speed(self):
             self.main_left_curr_wifi_speed.configure(text=self.get_Up_Down())
-            
+        def open_toplevel(self):
+                if self.toplevel_window is None or not self.toplevel_window.winfo_exists():
+                    self.toplevel_window = ToplevelWindow(self)  # create window if its None or destroyed
+                else:
+                    self.toplevel_window.focus()  # if window exists focus it
+
+    # IP window
+    class ToplevelWindow(ctk.CTkToplevel):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.geometry("400x300")
+
+            self.label = ctk.CTkLabel(self, text="ToplevelWindow")
+            self.label.pack(padx=20, pady=20)
+        
     if __name__ == "__main__":
         app = App()
         app.main_left_update_ip()
