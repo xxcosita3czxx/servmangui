@@ -2,9 +2,11 @@
 #                                # Server Manager GUI #                                      #
 ##############################################################################################
 # TODO's for myself ->>
-# TODO>> Network tab (Utils/test_autobuttons.py)
+#
+# TODO>> Add popups on every network button
 # TODO>> terminal ssh
-# TODO>> Fix UP/DOWN meter
+# TODO>> FREE SPOT
+#
 ##############################################################################################
 
 import customtkinter as ctk
