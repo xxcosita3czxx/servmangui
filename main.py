@@ -5,7 +5,7 @@
 #
 # TODO>> Add popups on every network button
 # TODO>> terminal ssh
-# TODO>> FREE SPOT
+# TODO>> do the popup gui
 #
 ##############################################################################################
 
@@ -59,7 +59,6 @@ try: # The error handler
             # Tabs
             self.main_tab.add("Home")
             self.main_tab.add("Network")
-            self.main_tab.add("Control")
             self.main_tab.add("Remote Terminal")
             
             # Left Frame Info
