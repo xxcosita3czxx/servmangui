@@ -40,9 +40,9 @@ try: # The error handler
             self.subnet = ".".join(self.ip.split('.')[:-1])
             
             config_raw_r=json.load(open("config.json","r"))
-            num_threads = config_raw_r["num_threads"]
-            ip_start = config_raw_r["start_ip"]
-            ip_end = config_raw_r["end_ip"]
+            self.num_threads = config_raw_r["num_threads"]
+            self.ip_start = config_raw_r["start_ip"]
+            self.ip_end = config_raw_r["end_ip"]
             self.ip_buttons_ids = []
             # Frames
             self.main_left = ctk.CTkFrame(self,width=200,height=400)
@@ -69,7 +69,7 @@ try: # The error handler
             self.main_tab_Home_about_text = ctk.CTkLabel(self.main_tab.tab("Home"),text=main_tab_Home_about_text_var,width=387)
 
             ## Network Tab
-            self.main_tab_Network_refresh_button = ctk.CTkButton(self.main_tab.tab("Network"),text="refresh",width=387)
+            self.main_tab_Network_refresh_button = ctk.CTkButton(self.main_tab.tab("Network"),text="refresh",width=387,command=self.refresh_button_middleman)
             # Grid Applying
             self.main_left.grid(row=0,column=0,sticky="n"+"w"+"s"+"e")
             self.main_left_curr_wifi_conn.grid(row=0,column=0,sticky="w"+"e"+"n")
@@ -145,30 +145,36 @@ try: # The error handler
             ips_per_thread = (end_ip - start_ip + 1) // num_threads
 
             # Create and start threads
-            threads = []
-            for i in range(num_threads):
-                start = start_ip + i * ips_per_thread
-                end = start + ips_per_thread - 1
-                thread = threading.Thread(target=self.check_ip_range, args=(subnet, start, end, result_list))
-                thread.start()
-                threads.append(thread)
+            try:
+                threads = []
+                for i in range(num_threads):
+                    start = start_ip + i * ips_per_thread
+                    end = start + ips_per_thread - 1
+                    thread = threading.Thread(target=self.check_ip_range, args=(subnet, start, end, result_list))
+                    thread.start()
+                    threads.append(thread)
 
-            # Wait for all threads to finish
-            for thread in threads:
-                thread.join()
+                # Wait for all threads to finish
+                for thread in threads:
+                    thread.join()
 
-            return result_list
-
+                return result_list
+            except KeyboardInterrupt:
+                print("DO NOT INTERRUPT THE THREADS")
+            except Exception as e:
+                print("Whoops, we got an exception: "+e)
         def check_ip_range(self,subnet, start, end, result_list):
             for i in range(start, end + 1):
                 ip = subnet + "." + str(i)
                 self.check_ip_existence(ip, result_list)
 
         def update_network_list(self,window,button_labels):
+            for button in self.ip_buttons_ids:
+                button.destroy()
             self.ip_buttons_ids.clear()
             for i, label in enumerate(button_labels):
-                button = ctk.CTkButton(window, text=label)
-                button.grid(row=i, column=0)
+                button = ctk.CTkButton(window, text=label,anchor="w",width=387,fg_color="gray")
+                button.grid(row=i+1, column=0,sticky="w")
                 self.ip_buttons_ids.append(button)
                 
         def get_router_gateway_ip():
@@ -181,7 +187,12 @@ try: # The error handler
             except Exception as e:
                 print(f"Error getting router gateway IP: {e}")
                 return None
-            
+        def refresh_button_middleman(self):
+            try:
+                self.update_network_list(self.main_tab.tab("Network"),self.scan_lan_ips(subnet=self.subnet,num_threads=self.num_threads,start_ip=self.ip_start,end_ip=self.ip_end))
+            except Exception as e:
+                print(f"whoops? {e}")
+        
         ## Updating Functions
         def main_left_update_ip(self):
             self.main_left_curr_wifi_LAN_ip.configure(text=f"IP: {self.ip}")
@@ -193,13 +204,14 @@ try: # The error handler
             
         def main_left_update_speed(self):
             self.main_left_curr_wifi_speed.configure(text=self.get_Up_Down())
-            app.after(30000,self.main_left_update_speed)
             
     if __name__ == "__main__":
         app = App()
         app.main_left_update_ip()
         app.main_left_update_ssid()
-        app.main_left_update_speed()
+        speedthread = threading.Thread(target=app.main_left_update_speed)
+        speedthread.setDaemon(True)
+        speedthread.start()
         app.mainloop()
 
 except PermissionError:
@@ -207,3 +219,5 @@ except PermissionError:
     
 except KeyboardInterrupt:
     print("See you next time :3")
+except Exception as e:
+    print(f"Whoops, you got an main thread error: {e}")
